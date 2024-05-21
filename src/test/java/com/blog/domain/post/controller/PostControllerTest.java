@@ -211,4 +211,31 @@ class PostControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("존재하지 않는 게시글 조회")
+    void test9() throws Exception {
+        mockMvc.perform(get("/posts/{id}", 9999)
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+
+    @Test
+    @DisplayName("post title에 바보라는 글자가 들어가면 400 에러를 낸다.")
+    void test10() throws Exception {
+        PostCreate request = PostCreate.builder()
+                .title("바보")
+                .content("내용")
+                .build();
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/posts")
+                        .contentType(APPLICATION_JSON)
+                        .content(json)
+                )
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
 }
