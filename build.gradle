@@ -20,8 +20,7 @@ configurations {
 }
 
 ext {
-    asciidocVersion = "3.0.1.RELEASE"
-    snippetsDir = file('build/generated-snippets')
+    set('snippetsDir', file("build/generated-snippets"))
 }
 
 repositories {
@@ -32,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
@@ -45,22 +45,46 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    //rest doc
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:${asciidocVersion}'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:${asciidocVersion}'
-}
-
-test {
-    outputs.dir snippetsDir
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
 asciidoctor {
-    inputs.dir snippetsDir
     configurations 'asciidoctorExt'
+    inputs.dir snippetsDir
     dependsOn test
+    doFirst {
+        delete file('src/main/resources/static/docs')
+    }
 }
 
-
 tasks.named('test') {
+    outputs.dir snippetsDir
+    finalizedBy asciidoctor
     useJUnitPlatform()
+}
+
+tasks.named('testClasses') {
+    doFirst {
+        delete file('build/docs/asciidoc')
+    }
+}
+
+task copyDocument(type: Copy) {
+    from file('build/docs/asciidoc')
+    into file('src/main/resources/static/docs')
+}
+
+tasks.named('asciidoctor') {
+    finalizedBy(tasks.named('copyDocument'))
+}
+
+bootJar {
+    dependsOn asciidoctor
+    doFirst {
+        delete file('static/docs')
+    }
+    from("${asciidoctor.outputDir}") {
+        into 'static/docs'
+    }
 }
