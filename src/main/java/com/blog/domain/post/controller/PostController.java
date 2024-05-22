@@ -1,5 +1,6 @@
 package com.blog.domain.post.controller;
 
+import com.blog.config.data.UserSession;
 import com.blog.domain.post.dto.request.PostCreate;
 import com.blog.domain.post.dto.request.PostEdit;
 import com.blog.domain.post.dto.request.PostSearch;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -25,10 +27,18 @@ public class PostController {
 
     private final PostService postService;
 
+    @GetMapping("/task")
+    public String task(UserSession userSession) {
+
+        return "hello";
+    }
+
     @PostMapping("/posts")
-    public void post(@RequestBody @Valid PostCreate request) {
-        request.validate();
-        postService.write(request);
+    public void post(@RequestBody @Valid PostCreate request, @RequestHeader String authorization) {
+        if (authorization.equals("writer")) {
+            request.validate();
+            postService.write(request);
+        }
     }
 
     @GetMapping("/posts")

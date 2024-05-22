@@ -43,7 +43,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("post 요청시 200 응답코드를 보낸다.")
+    @DisplayName("/post 경로로 POST 요청시 200 응답코드를 보낸다.")
     void test() throws Exception {
         PostCreate request = PostCreate.builder()
                 .title("제목")
@@ -52,6 +52,7 @@ class PostControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/posts")
+                        .header("authorization", "writer")
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
@@ -59,29 +60,9 @@ class PostControllerTest {
                 .andDo(print());
 
     }
-//
-//    @Test
-//    @DisplayName("post 요청시 값이 부족하면 400 에러를 보낸다.")
-//    void test2() throws Exception {
-//        PostCreate request = PostCreate.builder()
-//                .content("내용")
-//                .build();
-//
-//        String json = objectMapper.writeValueAsString(request);
-//
-//        mockMvc.perform(post("/posts")
-//                        .contentType(APPLICATION_JSON)
-//                        .content(json)
-//                )
-//                .andExpect(status().isBadRequest())
-//                .andExpect(jsonPath("$.message").value("잘못된 요청 입니다."))
-//                .andExpect(jsonPath("$.validation.title").value("제목을 입력해주세요."))
-//                .andDo(print());
-//
-//    }
 
     @Test
-    @DisplayName("post 요청시 DB에 값이 저장된다.")
+    @DisplayName("/post 경로로 POST 요청시 DB에 값이 저장된다.")
     void test3() throws Exception {
         PostCreate request = PostCreate.builder()
                 .title("제목")
@@ -91,6 +72,7 @@ class PostControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/posts")
+                        .header("authorization", "writer")
                         .contentType(APPLICATION_JSON)
                         .content(json)
                 )
